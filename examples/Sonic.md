@@ -26,63 +26,46 @@ Function PlayerActive As Boolean
   Return Not DemoMode And Not LevelSelect And Not DebugMode
 End Function
 
-Sub NewbieCollector
+Trophy NewbieCollector
   If NumRings >= 20 And PlayerActive Then
-    Award(New Trophy With {
-      .Title = "Newbie Collector",
-      .Description = "Collect 20 Rings",
-      .BadgeName = "00205",
-      .Points = 5
-    })
+    Award("Newbie Collector", "Collect 20 Rings", "00205", 5)
   End If
-End Sub
+End Trophy
 
-Sub RingCollector
+Trophy RingCollector
   If NumRings >= 100 And PlayerActive Then
-    Award(New Trophy With {
-      .Title = "Ring Collector",
-      .Description = "Collect 100 Rings!",
-      .BadgeName = "00206",
-      .Points = 10
-    })
+    Award("Ring Collector", "Collect 100 Rings!", "00206", 10)
   End If
-End Sub
+End Trophy
 
-Sub ProCollector
+Trophy ProCollector
   If NumRings >= 200 And PlayerActive Then
-    Award(New Trophy With {
-      .Title = "Pro Collector",
-      .Description = "Collect 200 Rings!!",
-      .BadgeName = "00207",
-      .Points = 20
-    })
+    Award("Pro Collector", "Collect 200 Rings!!", "00207", 20)
   End If
-End Sub
+End Trophy
 
-Sub ThatWasEasy
+Trophy ThatWasEasy
   Static Dim CurrentActLast As Uint8 = 0
   Dim CurrentActNow As Uint8 = CurrentAct
   
   If (CurrentActNow - CurrentActLast) = 1 And PlayerActive Then
-    Award(New Trophy With {
-      .Title = "That Was Easy",
-      .Description = "Complete the first act in Green Hill Zone",
-      .BadgeName = "00208",
-      .Points = 5
-    })
+    Award("That Was Easy", "Complete the first act in Green Hill Zone", "00208", 5)
   End If
   
   CurrentActLast = CurrentActNow
-End Sub
+End Trophy
 
-Sub TheFloorIsLava
+Trophy TheFloorIsLava
   If CurrentAct = 2 And PlayerActive Then
-    Award(New Trophy With {
-      .Title = "The Floor Is Lava",
-      .Description = "Get to Marble Zone!",
-      .BadgeName = "00209",
-      .Points = 10
-    })
+    Award("The Floor Is Lava", "Get to Marble Zone!", "00209", 10)
   End If
+End Trophy
+
+Sub TestTrophies Handles OnFrame
+  NewbieCollector()
+  RingCollector()
+  ProCollector()
+  ThatWasEasy()
+  TheFloorIsLava()
 End Sub
 ```
