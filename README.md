@@ -33,7 +33,7 @@ statement = control-flow | commands | assignment-or-call .
 
 control-flow = if | for | while | repeat .
 
-commands = dim | return | randomize .
+commands = dim | return | award .
 
 if = 'if' expression ( 'then' )? statement* ( 'elseif' expression ( 'then' )? statement* )* ( 'else' statement* )? 'end' 'if' .
 
@@ -49,7 +49,7 @@ variable-list = ID ( ',' ID )* 'as' type ( '=' expression )? .
 
 return  = 'return' ( expression )? .
 
-randomize = 'randomize' ( expression )? .
+award = 'award' '(' STRING ',' STRING ',' STRING ',' NUMBER ')' .
 
 assignment-or-call = ID '=' expression
                    | ID ( '.' mem-type )? ( '.' mem-mode )? '[' expression ']' '=' expression
@@ -82,7 +82,7 @@ factor = unary ( ( '*' | '/' ) unary )* .
 
 unary = ( '-' | '+' )? terminal .
 
-terminal = NUMBER | 'true' | 'false' | '(' expression ')' | ID-or-mem-or-call | math-function .
+terminal = NUMBER | STRING | 'true' | 'false' | '(' expression ')' | ID-or-mem-or-call | math-function .
 
 ID-or-mem-or-call = ID
                   | ID ( '.' mem-type )? ( '.' mem-mode )? '[' expression ']'
