@@ -3,7 +3,7 @@
 Retrophies is:
 
 * A language to write code that tests for awards target at emulators;
-* A compiler that takes code written in that language and generates bytecode; and
+* A compiler that takes code written in that language and generates bytecode;
 * A virtual machine that runs that bytecode, and signals to the host emulator if a trophy should be awarded; and
 * A specification of how to correctly implement trophies in an emulator.
 
