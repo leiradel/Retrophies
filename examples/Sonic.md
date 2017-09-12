@@ -61,7 +61,7 @@ Trophy TheFloorIsLava
   End If
 End Trophy
 
-Sub TestTrophies Handles OnFrame
+Sub TestTrophies Handles OnFrameEnd
   NewbieCollector()
   RingCollector()
   ProCollector()
