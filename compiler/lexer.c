@@ -100,8 +100,11 @@ int retrophies_lexer_next(retrophies_lexer_t* self, retrophies_lexer_lookahead_t
 
   if (RETROPHIES_LEXER_ISALPHA(k))
   {
+    uint32_t hash = 5381;
+
     do
     {
+      hash = hash * 33 + tolower(k);
       k = retrophies_lexer_skip(self);
     }
     while (RETROPHIES_LEXER_ISALPHA(k));
@@ -111,6 +114,7 @@ int retrophies_lexer_next(retrophies_lexer_t* self, retrophies_lexer_lookahead_t
 
     la->token         = (keyword != NULL) ? keyword->token : RETROPHIES_TOKEN_IDENTIFIER;
     la->lexeme.length = length;
+    la->hash          = hash;
     self->last_char   = k;
     return 0;
   }

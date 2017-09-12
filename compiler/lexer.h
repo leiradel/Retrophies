@@ -94,6 +94,7 @@ typedef struct
 {
   int                       token;
   retrophies_lexer_string_t lexeme;
+  uint32_t                  hash;
   unsigned                  line;
 }
 retrophies_lexer_lookahead_t;
