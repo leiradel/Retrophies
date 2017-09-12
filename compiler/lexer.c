@@ -15,14 +15,15 @@
 
 #define RETROPHIES_LEXER_GET(s) ((s)->source < (s)->end ? *(s)->source : -1)
 
-void retrophies_lexer_init(retrophies_lexer_t* self, const void* source, size_t length, char* error, size_t error_size)
+void retrophies_lexer_init(retrophies_lexer_t* self, const char* source_name, const void* source, size_t length, char* error, size_t error_size)
 {
-  self->source     = (uint8_t*)source;
-  self->end        = self->source + length;
-  self->last_char  = RETROPHIES_LEXER_GET(self);
-  self->line       = 0;
-  self->error      = error;
-  self->error_size = error_size;
+  self->source_name = source_name;
+  self->line        = 0;
+  self->source      = (uint8_t*)source;
+  self->end         = self->source + length;
+  self->last_char   = RETROPHIES_LEXER_GET(self);
+  self->error       = error;
+  self->error_size  = error_size;
 }
 
 static inline int retrophies_lexer_skip(retrophies_lexer_t* self)
@@ -57,6 +58,19 @@ static void retrophies_lexer_formatchar(char* buffer, size_t size, int k)
   {
     strncpy(buffer, "<eof>", size);
   }
+}
+
+static int retrophies_lexer_error(retrophies_lexer_t* self, const char* format, ...)
+{
+  int written = snprintf(self->error, self->error_size, "%s:%u: ", self->source_name, self->line);
+
+  va_list args;
+
+  va_start(args, format);
+  vsnprintf(self->error + written, self->error_size - written, format, args);
+  va_end(args);
+
+  return -1;
 }
 
 int retrophies_lexer_next(retrophies_lexer_t* self, retrophies_lexer_lookahead_t* la)
@@ -356,15 +370,4 @@ void retrophies_lexer_getlexeme(char* buffer, size_t size, int token)
   {
     retrophies_lexer_formatchar(buffer, size, token);
   }
-}
-
-int retrophies_lexer_error(retrophies_lexer_t* self, const char* format, ...)
-{
-  va_list args;
-
-  va_start(args, format);
-  vsnprintf(self->error, self->error_size, format, args);
-  va_end(args);
-
-  return -1;
 }

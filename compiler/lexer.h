@@ -101,18 +101,18 @@ retrophies_lexer_lookahead_t;
 
 typedef struct
 {
+  const char*    source_name;
+  unsigned       line;
   const uint8_t* source;
   const uint8_t* end;
   int            last_char;
-  unsigned       line;
   char*          error;
   size_t         error_size;
 }
 retrophies_lexer_t;
 
-void retrophies_lexer_init(retrophies_lexer_t* self, const void* source, size_t length, char* error, size_t error_size);
+void retrophies_lexer_init(retrophies_lexer_t* self, const char* source_name, const void* source, size_t length, char* error, size_t error_size);
 int  retrophies_lexer_next(retrophies_lexer_t* self, retrophies_lexer_lookahead_t* la);
 void retrophies_lexer_getlexeme(char* buffer, size_t size, int token);
-int  retrophies_lexer_error(retrophies_lexer_t* self, const char* format, ...);
 
 #endif /* RETROPHIES_LEXER_H */
