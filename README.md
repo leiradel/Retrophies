@@ -4,7 +4,8 @@ Retrophies is:
 
 * A language to write code that tests for awards target at emulators;
 * A compiler that takes code written in that language and generates bytecode; and
-* A VM that runs that bytecode, and signals to the host emulator if a trophie should be awarded.
+* A virtual machine that runs that bytecode, and signals to the host emulator if a trophy should be awarded; and
+* A specification of how to correctly implement trophies in an emulator.
 
 ## Grammar
 
@@ -12,15 +13,19 @@ I've started this as a BASIC dialect, but I ended up borrowing more and more fro
 
 
 ```
-program = ( subroutine | function | dim )* .
+program = ( subroutine | function | trophy | dim )* .
 
-subroutine = 'sub' ID ( '(' ID 'as' type ( ',' ID 'as' type )* ')' )?
+subroutine = 'sub' ID ( '(' ID 'as' type ( ',' ID 'as' type )* ')' )? ( 'handles' ID ( ',' ID )* )?
              statement*
              'end' 'sub' .
 
 function = 'function' ID ( '(' ID 'as' type ( ',' ID 'as' type )* ')' )? 'as' type
            statement*
            'end' 'function' .
+
+trophy = 'trophy' ID ( '(' ID 'as' type ( ',' ID 'as' type )* ')' )?
+         statement*
+         'end' 'trophy' .
 
 type = 'boolean' | 'string' | 'int8' | 'int16' | 'int32' | 'int64' | 'uint8' | 'uint16' | 'uint32' | 'uint64' | 'single' | 'double' .
 
