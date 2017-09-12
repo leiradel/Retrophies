@@ -19,9 +19,8 @@ dim,                RETROPHIES_TOKEN_DIM
 function,           RETROPHIES_TOKEN_FUNCTION
 handles,            RETROPHIES_TOKEN_HANDLES
 static,             RETROPHIES_TOKEN_STATIC
-sub,                RETROPHIES_TOKEN_SUB
+sub,                RETROPHIES_TOKEN_SUBROUTINE
 trophy,             RETROPHIES_TOKEN_TROPHY
-randomize,          RETROPHIES_TOKEN_RANDOMIZE
 return,             RETROPHIES_TOKEN_RETURN
 abs,                RETROPHIES_TOKEN_ABS
 ceil,               RETROPHIES_TOKEN_CEIL
