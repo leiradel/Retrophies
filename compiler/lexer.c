@@ -59,17 +59,6 @@ static void retrophies_lexer_formatchar(char* buffer, size_t size, int k)
   }
 }
 
-static int retrophies_lexer_error(retrophies_lexer_t* self, const char* format, ...)
-{
-  va_list args;
-
-  va_start(args, format);
-  vsnprintf(self->error, self->error_size, format, args);
-  va_end(args);
-
-  return -1;
-}
-
 int retrophies_lexer_next(retrophies_lexer_t* self, retrophies_lexer_lookahead_t* la)
 {
   int k = self->last_char;
@@ -367,4 +356,15 @@ void retrophies_lexer_getlexeme(char* buffer, size_t size, int token)
   {
     retrophies_lexer_formatchar(buffer, size, token);
   }
+}
+
+int retrophies_lexer_error(retrophies_lexer_t* self, const char* format, ...)
+{
+  va_list args;
+
+  va_start(args, format);
+  vsnprintf(self->error, self->error_size, format, args);
+  va_end(args);
+
+  return -1;
 }
