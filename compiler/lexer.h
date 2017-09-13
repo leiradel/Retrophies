@@ -40,6 +40,7 @@ enum
   RETROPHIES_TOKEN_TROPHY,
   
   /* Commands */
+  RETROPHIES_TOKEN_AWARD,
   RETROPHIES_TOKEN_RETURN,
 
   /* Functions */

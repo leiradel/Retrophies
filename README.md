@@ -49,7 +49,7 @@ variable-list = ID ( ',' ID )* 'as' type ( '=' expression )? .
 
 return  = 'return' ( expression )? .
 
-award = 'award' '(' STRING ',' STRING ',' STRING ',' NUMBER ')' .
+award = 'award' STRING ',' STRING ',' STRING ',' NUMBER .
 
 assignment-or-call = ID '=' expression
                    | ID ( '.' mem-type )? ( '.' mem-mode )? '[' expression ']' '=' expression
