@@ -96,14 +96,14 @@ typedef struct
   int                       token;
   retrophies_lexer_string_t lexeme;
   uint32_t                  hash;
-  unsigned                  line;
+  int                       line;
 }
 retrophies_lexer_lookahead_t;
 
 typedef struct
 {
   const char*    source_name;
-  unsigned       line;
+  int            line;
   const uint8_t* source;
   const uint8_t* end;
   int            last_char;

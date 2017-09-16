@@ -7,7 +7,7 @@ else
 endif
 
 CFLAGS=-O0 -g -Wall -std=c99
-OBJS=lexer.o parser.o
+OBJS=emitter.o lexer.o parser.o
 
 %.o: %.c
 	gcc $(CFLAGS) -c $< -o $@
@@ -17,12 +17,14 @@ all: retrophiesc$(EXE)
 retrophiesc$(EXE): $(OBJS)
 	gcc -o $@ $+
 
-lexer.o: lexer.c lexer.h tokens.h
+emitter.o: emitter.c emitter.h
+
+lexer.o: lexer.c lexer.h tokens.c
 
 parser.o: parser.c parser.h lexer.h emitter.h
 
-tokens.h: tokens.gperf
+tokens.c: tokens.gperf
 	gperf -c -C -l -L ANSI-C -t -m 100 -I -H retrophies_lexer_hash -N retrophies_lexer_lookup --output-file=$@ $<
 
 clean:
-	rm -f retrophiesc$(EXE) $(OBJS) tokens.h
+	rm -f retrophiesc$(EXE) $(OBJS) tokens.c

@@ -1,5 +1,4 @@
 #include "lexer.h"
-#include "tokens.h"
 
 #include <ctype.h>
 #include <stdarg.h>
@@ -14,6 +13,8 @@
 #define RETROPHIES_LEXER_ISBDIGIT(k) ((k & 0xfe) == '0' /* ascii only */)
 
 #define RETROPHIES_LEXER_GET(s) ((s)->source < (s)->end ? *(s)->source : -1)
+
+#include "tokens.c"
 
 void retrophies_lexer_init(retrophies_lexer_t* self, const char* source_name, const void* source, size_t length, char* error, size_t error_size)
 {
@@ -62,7 +63,7 @@ static void retrophies_lexer_formatchar(char* buffer, size_t size, int k)
 
 static int retrophies_lexer_error(retrophies_lexer_t* self, const char* format, ...)
 {
-  int written = snprintf(self->error, self->error_size, "%s:%u: ", self->source_name, self->line);
+  int written = snprintf(self->error, self->error_size, "%s:%d: ", self->source_name, self->line);
 
   va_list args;
 
