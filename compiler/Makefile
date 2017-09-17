@@ -21,10 +21,7 @@ emitter.o: emitter.c emitter.h
 
 lexer.o: lexer.c lexer.h tokens.c
 
-parser.o: parser.c parser.h lexer.h emitter.h
-
-tokens.c: tokens.gperf
-	gperf -c -C -l -L ANSI-C -t -m 100 -I -H retrophies_lexer_hash -N retrophies_lexer_lookup --output-file=$@ $<
+parser.o: parser.c parser.h lexer.h emitter.h if.c for.c while.c stmts.c subs.c program.c
 
 clean:
-	rm -f retrophiesc$(EXE) $(OBJS) tokens.c
+	rm -f retrophiesc$(EXE) $(OBJS)
