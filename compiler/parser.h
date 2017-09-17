@@ -23,8 +23,8 @@ typedef struct retrophies_parser_event_t retrophies_parser_event_t;
 
 struct retrophies_parser_event_t
 {
-  retrophies_lexer_lookahead_t names;
-  retrophies_parser_event_t*  previous;
+  retrophies_lexer_lookahead_t name;
+  retrophies_parser_event_t*   previous;
 };
 
 typedef struct retrophies_parser_codeblock_t retrophies_parser_codeblock_t;
@@ -63,13 +63,13 @@ struct retrophies_parser_t
   retrophies_lexer_t              lexer;
   retrophies_lexer_lookahead_t    la;
   retrophies_parser_subroutine_t* subroutines;
+  retrophies_parser_subroutine_t* sub;
   retrophies_parser_codeblock_t*  code;
   int                             code_size;
-  retrophies_emitter_t            emitter;
   jmp_buf                         rollback;
 };
 
 void retrophies_parser_init(retrophies_parser_t* self, const char* source_name, const void* source, size_t length, void* temp_buffer, size_t temp_size, char* error, size_t error_size);
-int  retrophies_parser_parse(retrophies_parser_t* self, retrophies_emitter_t* emitter);
+int  retrophies_parser_parse(retrophies_parser_t* self);
 
 #endif /* RETROPHIES_PARSER_H */

@@ -14,6 +14,7 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
   sub->sub_type = type;
   sub->name = self->la;
   self->code_size = 0;
+  self->sub = sub;
 
   retrophies_parser_match(self, RETROPHIES_TOKEN_IDENTIFIER);
 
@@ -27,6 +28,7 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
       local->previous = sub->locals;
       sub->locals = local;
       local->name = self->la;
+      local->index = sub->num_locals;
       retrophies_parser_match(self, RETROPHIES_TOKEN_IDENTIFIER);
       retrophies_parser_match(self, RETROPHIES_TOKEN_AS);
       local->type = retrophies_parser_parsetype(self);
@@ -72,7 +74,7 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
     sub->ret_type = retrophies_parser_parsetype(self);
   }
 
-  int was_return = retrophies_parser_parsestatements(self, &sub);
+  int was_return = retrophies_parser_parsestatements(self);
 
   if (self->la.token != RETROPHIES_TOKEN_END)
   {

@@ -51,7 +51,7 @@ static int retrophies_parser_emit(retrophies_parser_t* self, int insn, ...)
   }
 
   va_list args;
-  va_begin(args, insn);
+  va_start(args, insn);
   retrophies_emitter_emit((void*)(code->code + code->count), insn, args);
   code->count += size;
   self->code_size += size;
@@ -147,7 +147,7 @@ static void retrophies_parser_parseexpression(retrophies_parser_t* self, int typ
   (void)type;
 }
 
-static void retrophies_parser_parsestatements(retrophies_parser_t* self, retrophies_parser_subroutine_t* sub);
+static int retrophies_parser_parsestatements(retrophies_parser_t* self);
 
 #include "if.c"
 #include "for.c"
@@ -165,7 +165,7 @@ void retrophies_parser_init(retrophies_parser_t* self, const char* source_name, 
   self->temp_buffer = (uint8_t*)temp_buffer;
 }
 
-int retrophies_parser_parse(retrophies_parser_t* self, retrophies_emitter_t* emitter)
+int retrophies_parser_parse(retrophies_parser_t* self)
 {
   if (setjmp(self->rollback) != 0)
   {

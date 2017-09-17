@@ -6,7 +6,7 @@ struct retrophies_parser_jumpchain_t
   retrophies_parser_jumpchain_t* previous;
 };
 
-static void retrophies_parser_parseif(retrophies_parser_t* self, retrophies_parser_subroutine_t* sub)
+static void retrophies_parser_parseif(retrophies_parser_t* self)
 {
   retrophies_parser_matchany(self);
   retrophies_parser_parseexpression(self, RETROPHIES_TOKEN_BOOLEAN);
@@ -15,10 +15,11 @@ static void retrophies_parser_parseif(retrophies_parser_t* self, retrophies_pars
   void* label_false = (void*)(self->code->code + self->code->count);
   retrophies_parser_emit(self, RETROPHIES_INSN_JNE, 0);
 
-  retrophies_parser_parsestatements(self, sub);
+  retrophies_parser_parsestatements(self);
 
   retrophies_parser_jumpchain_t* chain = RETROPHIES_PARSER_ALLOC(retrophies_parser_jumpchain_t);
   chain->label = (void*)(self->code->code + self->code->count);
+  chain->previous = NULL;
   retrophies_parser_emit(self, RETROPHIES_INSN_JUMP, 0);
   
   retrophies_emitter_patch(label_false, self->code_size);
@@ -32,10 +33,12 @@ static void retrophies_parser_parseif(retrophies_parser_t* self, retrophies_pars
     label_false = (void*)(self->code->code + self->code->count);
     retrophies_parser_emit(self, RETROPHIES_INSN_JNE, 0);
 
-    retrophies_parser_parsestatements(self, sub);
+    retrophies_parser_parsestatements(self);
 
-    retrophies_parser_jumpchain_t* chain = RETROPHIES_PARSER_ALLOC(retrophies_parser_jumpchain_t);
-    chain->label = (void*)(self->code->code + self->code->count);
+    retrophies_parser_jumpchain_t* next = RETROPHIES_PARSER_ALLOC(retrophies_parser_jumpchain_t);
+    next->label = (void*)(self->code->code + self->code->count);
+    next->previous = chain;
+    chain = next;
     retrophies_parser_emit(self, RETROPHIES_INSN_JUMP, 0);
   
     retrophies_emitter_patch(label_false, self->code_size);
@@ -43,17 +46,16 @@ static void retrophies_parser_parseif(retrophies_parser_t* self, retrophies_pars
 
   if (retrophies_parser_matchopt(self, RETROPHIES_TOKEN_ELSE))
   {
-    retrophies_parser_parsestatements(self, sub);
+    retrophies_parser_parsestatements(self);
   }
 
   retrophies_parser_match(self, RETROPHIES_TOKEN_END);
   retrophies_parser_match(self, RETROPHIES_TOKEN_IF);
 
-  next = RETROPHIES_EMITTER_GETPC(&self->emitter);
-  int i;
-
-  for (i = 0; i < chain; i++)
+  do
   {
-    RETROPHIES_EMITTER_PATCH(&self->emitter, finish[i], end);
+    retrophies_emitter_patch(chain->label, self->code_size);
+    chain = chain->previous;
   }
+  while (chain != NULL);
 }
