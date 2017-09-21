@@ -16,7 +16,7 @@ static int retrophies_parser_parsestatements(retrophies_parser_t* self)
     case RETROPHIES_TOKEN_DIM:        /* fall through */
     case RETROPHIES_TOKEN_STATIC:     retrophies_parser_parsedim(self, 0); goto out;
     //case RETROPHIES_TOKEN_IDENTIFIER: retrophies_parser_parseassign(self); goto out;
-    //case RETROPHIES_TOKEN_RETURN:     retrophies_parser_parsereturn(self); returned = 1; goto out;
+    case RETROPHIES_TOKEN_RETURN:     retrophies_parser_parsereturn(self); returned = 1; goto out;
     
     case RETROPHIES_TOKEN_AWARD:
       if (self->sub->sub_type != RETROPHIES_TOKEN_TROPHY)

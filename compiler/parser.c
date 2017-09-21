@@ -181,7 +181,6 @@ static int retrophies_parser_parsetype(retrophies_parser_t* self)
   case RETROPHIES_TOKEN_INT32:
   case RETROPHIES_TOKEN_INT64:
   case RETROPHIES_TOKEN_SINGLE:
-  case RETROPHIES_TOKEN_STRING:
   case RETROPHIES_TOKEN_UINT8:
   case RETROPHIES_TOKEN_UINT16:
   case RETROPHIES_TOKEN_UINT32:
@@ -204,11 +203,12 @@ static void retrophies_parser_parseexpression(retrophies_parser_t* self, int typ
 
 static int retrophies_parser_parsestatements(retrophies_parser_t* self);
 
-#include "if.c"
-#include "for.c"
-#include "while.c"
-#include "repeat.c"
 #include "dim.c"
+#include "for.c"
+#include "if.c"
+#include "repeat.c"
+#include "return.c"
+#include "while.c"
 #include "stmts.c"
 #include "subs.c"
 #include "program.c"
