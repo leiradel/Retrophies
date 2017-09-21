@@ -21,7 +21,7 @@ emitter.o: emitter.c emitter.h
 
 lexer.o: lexer.c lexer.h tokens.c
 
-parser.o: parser.c parser.h lexer.h emitter.h if.c for.c while.c stmts.c subs.c program.c
+parser.o: parser.c parser.h lexer.h emitter.h if.c for.c repeat.c while.c stmts.c subs.c program.c dim.c
 
 clean:
 	rm -f retrophiesc$(EXE) $(OBJS)

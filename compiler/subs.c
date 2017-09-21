@@ -1,3 +1,5 @@
+#include "parser.h"
+
 static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int type)
 {
   retrophies_parser_matchany(self);

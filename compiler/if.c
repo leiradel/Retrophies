@@ -1,3 +1,5 @@
+#include "parser.h"
+
 typedef struct retrophies_parser_jumpchain_t retrophies_parser_jumpchain_t;
 
 struct retrophies_parser_jumpchain_t

@@ -1,3 +1,5 @@
+#include "parser.h"
+
 static void retrophies_parser_parseprogram(retrophies_parser_t* self)
 {
   for (;;)

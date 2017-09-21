@@ -19,6 +19,16 @@ struct retrophies_parser_local_t
   retrophies_parser_local_t*   previous;
 };
 
+typedef struct retrophies_parser_global_t retrophies_parser_global_t;
+
+struct retrophies_parser_global_t
+{
+  retrophies_lexer_lookahead_t name;
+  uint32_t                     hash;
+  int                          type;
+  retrophies_parser_global_t*  previous;
+};
+
 typedef struct retrophies_parser_event_t retrophies_parser_event_t;
 
 struct retrophies_parser_event_t
@@ -59,10 +69,12 @@ struct retrophies_parser_t
   size_t                          temp_ptr;
   size_t                          temp_size;
   uint8_t*                        temp_buffer;
+  retrophies_parser_local_t*      free_locals;
 
   retrophies_lexer_t              lexer;
   retrophies_lexer_lookahead_t    la;
   retrophies_parser_subroutine_t* subroutines;
+  retrophies_parser_global_t*     globals;
   retrophies_parser_subroutine_t* sub;
   retrophies_parser_codeblock_t*  code;
   int                             code_size;

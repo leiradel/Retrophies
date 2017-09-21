@@ -36,6 +36,40 @@ static void* retrophies_parser_alloc(retrophies_parser_t* self, size_t size, siz
   return ptr;
 }
 
+static retrophies_parser_local_t* retrophies_parser_alloclocal(retrophies_parser_t* self)
+{
+  if (self->free_locals != NULL)
+  {
+    retrophies_parser_local_t* local = self->free_locals;
+    self->free_locals = local->previous;
+    return local;
+  }
+
+  return RETROPHIES_PARSER_ALLOC(retrophies_parser_local_t);
+}
+
+static void retrophies_parser_freelocals(retrophies_parser_t* self, retrophies_parser_local_t* previous)
+{
+  retrophies_parser_local_t* local = self->sub->locals;
+
+  if (local != NULL)
+  {
+    int num_locals = self->sub->num_locals;
+
+    while (local->previous != previous)
+    {
+      local = local->previous;
+      num_locals--;
+    }
+
+    local->previous = self->free_locals;
+    self->free_locals = local;
+    self->sub->num_locals = num_locals;
+  }
+
+  self->sub->locals = previous;
+}
+
 static int retrophies_parser_emit(retrophies_parser_t* self, int insn, ...)
 {
   retrophies_parser_codeblock_t* code = self->code;
@@ -60,9 +94,9 @@ static int retrophies_parser_emit(retrophies_parser_t* self, int insn, ...)
   return pc;
 }
 
-static const retrophies_parser_local_t* retrophies_parser_findlocal(const retrophies_parser_subroutine_t* sub, uint32_t hash)
+static retrophies_parser_local_t* retrophies_parser_findlocal(retrophies_parser_subroutine_t* sub, uint32_t hash)
 {
-  const retrophies_parser_local_t* local = sub->locals;
+  retrophies_parser_local_t* local = sub->locals;
 
   if (local != NULL)
   {
@@ -76,6 +110,27 @@ static const retrophies_parser_local_t* retrophies_parser_findlocal(const retrop
       local = local->previous;
     }
     while (local != NULL);
+  }
+
+  return NULL;
+}
+
+static retrophies_parser_global_t* retrophies_parser_findglobal(retrophies_parser_t* self, uint32_t hash)
+{
+  retrophies_parser_global_t* global = self->globals;
+
+  if (global != NULL)
+  {
+    do
+    {
+      if (global->name.hash == hash)
+      {
+        return global;
+      }
+
+      global = global->previous;
+    }
+    while (global != NULL);
   }
 
   return NULL;
@@ -152,6 +207,8 @@ static int retrophies_parser_parsestatements(retrophies_parser_t* self);
 #include "if.c"
 #include "for.c"
 #include "while.c"
+#include "repeat.c"
+#include "dim.c"
 #include "stmts.c"
 #include "subs.c"
 #include "program.c"

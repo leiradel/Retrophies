@@ -1,3 +1,5 @@
+#include "parser.h"
+
 static void retrophies_parser_parsewhile(retrophies_parser_t* self)
 {
   retrophies_parser_matchany(self);
