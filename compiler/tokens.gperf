@@ -35,7 +35,6 @@ int16,              RETROPHIES_TOKEN_INT16
 int32,              RETROPHIES_TOKEN_INT32
 int64,              RETROPHIES_TOKEN_INT64
 single,             RETROPHIES_TOKEN_SINGLE
-string,             RETROPHIES_TOKEN_STRING
 uint8,              RETROPHIES_TOKEN_UINT8
 uint16,             RETROPHIES_TOKEN_UINT16
 uint32,             RETROPHIES_TOKEN_UINT32
