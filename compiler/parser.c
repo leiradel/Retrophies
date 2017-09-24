@@ -94,22 +94,18 @@ static int retrophies_parser_emit(retrophies_parser_t* self, int insn, ...)
   return pc;
 }
 
-static retrophies_parser_local_t* retrophies_parser_findlocal(retrophies_parser_subroutine_t* sub, uint32_t hash)
+static retrophies_parser_local_t* retrophies_parser_findlocal(retrophies_parser_t* self, uint32_t hash)
 {
-  retrophies_parser_local_t* local = sub->locals;
+  retrophies_parser_local_t* local = self->sub->locals;
 
-  if (local != NULL)
+  while (local != NULL)
   {
-    do
+    if (local->name.hash == hash)
     {
-      if (local->name.hash == hash)
-      {
-        return local;
-      }
-
-      local = local->previous;
+      return local;
     }
-    while (local != NULL);
+
+    local = local->previous;
   }
 
   return NULL;
@@ -119,18 +115,31 @@ static retrophies_parser_global_t* retrophies_parser_findglobal(retrophies_parse
 {
   retrophies_parser_global_t* global = self->globals;
 
-  if (global != NULL)
+  while (global != NULL)
   {
-    do
+    if (global->name.hash == hash)
     {
-      if (global->name.hash == hash)
-      {
-        return global;
-      }
-
-      global = global->previous;
+      return global;
     }
-    while (global != NULL);
+
+    global = global->previous;
+  }
+
+  return NULL;
+}
+
+static retrophies_parser_subroutine_t* retrophies_parser_findsub(retrophies_parser_t* self, uint32_t hash)
+{
+  retrophies_parser_subroutine_t* sub = self->subroutines;
+
+  while (sub != NULL)
+  {
+    if (sub->name.hash == hash)
+    {
+      return sub;
+    }
+
+    sub = sub->previous;
   }
 
   return NULL;

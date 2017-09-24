@@ -62,7 +62,7 @@ static void retrophies_parser_parselocal(retrophies_parser_t* self)
 
     for (;;)
     {
-      var = retrophies_parser_findlocal(self->sub, self->la.hash);
+      var = retrophies_parser_findlocal(self, self->la.hash);
 
       if (var != NULL)
       {

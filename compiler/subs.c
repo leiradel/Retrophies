@@ -3,8 +3,18 @@
 static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int type)
 {
   retrophies_parser_matchany(self);
+  retrophies_lexer_lookahead_t id = self->la;
+  retrophies_parser_match(self, RETROPHIES_TOKEN_IDENTIFIER);
+  
+  retrophies_parser_subroutine_t* sub = retrophies_parser_findsub(self, id.hash);
 
-  retrophies_parser_subroutine_t* sub = RETROPHIES_PARSER_ALLOC(retrophies_parser_subroutine_t);
+  if (sub != NULL)
+  {
+    retrophies_parser_error(self, id.line, "Duplicated identifier: %.*s", id.lexeme.chars, id.lexeme.length);
+    /* never returns */
+  }
+
+  sub = RETROPHIES_PARSER_ALLOC(retrophies_parser_subroutine_t);
   sub->previous = self->subroutines;
   self->subroutines = sub;
   sub->locals = NULL;
@@ -18,7 +28,6 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
   self->code_size = 0;
   self->sub = sub;
 
-  retrophies_parser_match(self, RETROPHIES_TOKEN_IDENTIFIER);
 
   if (retrophies_parser_matchopt(self, '('))
   {

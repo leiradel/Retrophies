@@ -4,7 +4,7 @@ static void retrophies_parser_parsefor(retrophies_parser_t* self)
 {
   retrophies_parser_matchany(self);
   retrophies_lexer_lookahead_t name = self->la;
-  const retrophies_parser_local_t* var = retrophies_parser_findlocal(self->sub, name.hash);
+  const retrophies_parser_local_t* var = retrophies_parser_findlocal(self, name.hash);
 
   if (var == NULL)
   {
