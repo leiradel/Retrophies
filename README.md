@@ -2,14 +2,14 @@
 
 Retrophies is:
 
-* A language to write code that tests for awards target at emulators;
+* A language to write code that tests for awards;
 * A compiler that takes code written in that language and generates bytecode;
 * A virtual machine that runs that bytecode, and signals to the host emulator if a trophy should be awarded; and
 * A specification of how to correctly implement trophies in an emulator.
 
-## Grammar
+## Language
 
-I've started this as a BASIC dialect, but I ended up borrowing more and more from Visual Basic, so I decided to make the syntax as close as possible to VB.
+I've started this as a BASIC dialect, but I ended up borrowing more and more from Visual Basic since it's very well documented, so I decided to make the syntax as close as possible to VB.
 
 
 ```
