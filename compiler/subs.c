@@ -87,7 +87,7 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
     sub->ret_type = retrophies_parser_parsetype(self);
   }
 
-  int was_return = retrophies_parser_parsestatements(self);
+  int returned = retrophies_parser_parsestatements(self);
 
   if (self->la.token != RETROPHIES_TOKEN_END)
   {
@@ -97,7 +97,7 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
 
   if (type == RETROPHIES_TOKEN_FUNCTION)
   {
-    if (!was_return)
+    if (!returned)
     {
       retrophies_parser_error(self, self->la.line, "No return statement in function");
       /* never returns */
