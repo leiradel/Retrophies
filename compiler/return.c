@@ -28,4 +28,8 @@ static void retrophies_parser_parsereturn(retrophies_parser_t* self)
       break;
     }
   }
+  else
+  {
+    retrophies_parser_emit(self, RETROPHIES_INSN_RETURN);
+  }
 }
