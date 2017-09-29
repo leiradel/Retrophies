@@ -54,7 +54,6 @@ struct retrophies_parser_subroutine_t
   retrophies_lexer_lookahead_t    name;
   retrophies_parser_local_t*      locals;
   retrophies_parser_event_t*      events;
-  int                             num_args;
   int                             num_locals;
   int                             ret_type;
   retrophies_parser_codeblock_t   code;

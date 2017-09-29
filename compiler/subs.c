@@ -18,7 +18,6 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
   sub->previous = self->subroutines;
   self->subroutines = sub;
   sub->locals = NULL;
-  sub->num_args = 0;
   sub->num_locals = 0;
   sub->events = NULL;
   sub->code.count = 0;
@@ -39,13 +38,16 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
       local->previous = sub->locals;
       sub->locals = local;
       local->name = self->la;
-      local->index = sub->num_locals;
+      local->index = local->previous != NULL ? local->previous->index + 1 : 0;
+
+      if (local->index >= self->sub->num_locals)
+      {
+        self->sub->num_locals = local->index + 1;
+      }
+
       retrophies_parser_match(self, RETROPHIES_TOKEN_IDENTIFIER);
       retrophies_parser_match(self, RETROPHIES_TOKEN_AS);
       local->type = retrophies_parser_parsetype(self);
-
-      sub->num_args++;
-      sub->num_locals++;
 
       if (self->la.token != ',')
       {

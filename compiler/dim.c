@@ -74,7 +74,13 @@ static void retrophies_parser_parselocal(retrophies_parser_t* self)
       var->previous = self->sub->locals;
       self->sub->locals = var;
       var->name = self->la;
-      var->index = self->sub->num_locals++;
+      var->index = var->previous != NULL ? var->previous->index + 1 : 0;
+
+      if (var->index >= self->sub->num_locals)
+      {
+        self->sub->num_locals = var->index + 1;
+      }
+
       count++;
       retrophies_parser_match(self, RETROPHIES_TOKEN_IDENTIFIER);
 
@@ -113,19 +119,23 @@ static void retrophies_parser_parselocal(retrophies_parser_t* self)
 
 static void retrophies_parser_parsedim(retrophies_parser_t* self, int is_global)
 {
-  int is_static = retrophies_parser_matchopt(self, RETROPHIES_TOKEN_STATIC);
-  retrophies_parser_match(self, RETROPHIES_TOKEN_DIM);
-
   if (is_global)
   {
+    retrophies_parser_match(self, RETROPHIES_TOKEN_DIM);
     retrophies_parser_parseglobal(self, 0);
-  }
-  else if (is_static)
-  {
-    retrophies_parser_parseglobal(self, self->sub->name.hash);
   }
   else
   {
-    retrophies_parser_parselocal(self);
+    int is_static = retrophies_parser_matchopt(self, RETROPHIES_TOKEN_STATIC);
+    retrophies_parser_match(self, RETROPHIES_TOKEN_DIM);
+    
+    if (is_static)
+    {
+      retrophies_parser_parseglobal(self, self->sub->name.hash);
+    }
+    else
+    {
+      retrophies_parser_parselocal(self);
+    }
   }
 }
