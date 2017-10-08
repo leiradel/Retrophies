@@ -36,38 +36,64 @@ static void* retrophies_parser_alloc(retrophies_parser_t* self, size_t size, siz
   return ptr;
 }
 
-static retrophies_parser_local_t* retrophies_parser_alloclocal(retrophies_parser_t* self)
+static void retrophies_parser_pushscope(retrophies_parser_t* self)
 {
-  if (self->free_locals != NULL)
+  retrophies_parser_scope_t* scope;
+
+  if (self->free_scopes != NULL)
   {
-    retrophies_parser_local_t* local = self->free_locals;
-    self->free_locals = local->previous;
-    return local;
+    scope = self->free_scopes;
+    self->free_scopes = scope->previous;
+  }
+  else
+  {
+    scope = RETROPHIES_PARSER_ALLOC(retrophies_parser_scope_t);
   }
 
-  return RETROPHIES_PARSER_ALLOC(retrophies_parser_local_t);
+  scope->previous = self->sub->locals;
+  self->sub->locals = scope;
 }
 
-static void retrophies_parser_freelocals(retrophies_parser_t* self, retrophies_parser_local_t* previous)
+static void retrophies_parser_popscope(retrophies_parser_t* self)
 {
-  retrophies_parser_local_t* local = self->sub->locals;
+  retrophies_parser_var_t* var = self->sub->locals->vars;
+  int num_locals = self->sub->num_locals;
 
-  if (local != NULL)
+  while (var != NULL)
   {
-    int num_locals = self->sub->num_locals;
+    retrophies_parser_var_t* save = var->previous;
 
-    while (local->previous != previous)
+    if ((var->flags & RETROPHIES_VAR_STATIC) != 0)
     {
-      local = local->previous;
+      var->previous = self->globals.vars;
+      self->globals.vars = var;
+    }
+    else
+    {
+      var->previous = self->free_vars;
+      self->free_vars = var;
       num_locals--;
     }
 
-    local->previous = self->free_locals;
-    self->free_locals = local;
-    self->sub->num_locals = num_locals;
+    var = save;
+  }
+  
+  self->sub->num_locals = num_locals;
+
+  self->free_scopes = self->sub->locals;
+  self->sub->locals = self->sub->locals->previous;
+}
+
+static retrophies_parser_var_t* retrophies_parser_allocvar(retrophies_parser_t* self)
+{
+  if (self->free_vars != NULL)
+  {
+    retrophies_parser_var_t* var = self->free_vars;
+    self->free_vars = var->previous;
+    return var;
   }
 
-  self->sub->locals = previous;
+  return RETROPHIES_PARSER_ALLOC(retrophies_parser_var_t);
 }
 
 static int retrophies_parser_emit(retrophies_parser_t* self, int insn, ...)
@@ -94,35 +120,44 @@ static int retrophies_parser_emit(retrophies_parser_t* self, int insn, ...)
   return pc;
 }
 
-static retrophies_parser_local_t* retrophies_parser_findlocal(retrophies_parser_t* self, uint32_t hash)
+static int retrophies_parser_emitsetvar(retrophies_parser_t* self, const retrophies_parser_var_t* var)
 {
-  retrophies_parser_local_t* local = self->sub->locals;
-
-  while (local != NULL)
+  if ((var->flags & RETROPHIES_VAR_GLOBAL) != 0)
   {
-    if (local->name.hash == hash)
-    {
-      return local;
-    }
-
-    local = local->previous;
+    return retrophies_parser_emit(self, RETROPHIES_INSN_SETGLOBAL, var->hash);
   }
-
-  return NULL;
+  else
+  {
+    return retrophies_parser_emit(self, RETROPHIES_INSN_SETLOCAL, var->hash);
+  }
 }
 
-static retrophies_parser_global_t* retrophies_parser_findglobal(retrophies_parser_t* self, uint32_t hash)
+static retrophies_parser_var_t* retrophies_parser_findvar(retrophies_parser_t* self, uint32_t hash, int* scope_index)
 {
-  retrophies_parser_global_t* global = self->globals;
+  retrophies_parser_scope_t* scope = self->sub->locals;
+  int scope_count = 0;
 
-  while (global != NULL)
+  while (scope != NULL)
   {
-    if (global->name.hash == hash)
+    retrophies_parser_var_t* var = scope->vars;
+    
+    while (var != NULL)
     {
-      return global;
+      if (var->name.hash == hash)
+      {
+        if (scope_index != NULL)
+        {
+          *scope_index = scope_count;
+        }
+
+        return var;
+      }
+  
+      var = var->previous;
     }
 
-    global = global->previous;
+    scope = scope->previous;
+    scope_count++;
   }
 
   return NULL;
@@ -184,16 +219,7 @@ static int retrophies_parser_parsetype(retrophies_parser_t* self)
   switch (type)
   {
   case RETROPHIES_TOKEN_BOOLEAN:
-  case RETROPHIES_TOKEN_DOUBLE:
-  case RETROPHIES_TOKEN_INT8:
-  case RETROPHIES_TOKEN_INT16:
-  case RETROPHIES_TOKEN_INT32:
-  case RETROPHIES_TOKEN_INT64:
-  case RETROPHIES_TOKEN_SINGLE:
-  case RETROPHIES_TOKEN_UINT8:
-  case RETROPHIES_TOKEN_UINT16:
-  case RETROPHIES_TOKEN_UINT32:
-  case RETROPHIES_TOKEN_UINT64:
+  case RETROPHIES_TOKEN_INTEGER:
     retrophies_parser_matchany(self);
     return type;
   }
@@ -229,6 +255,9 @@ void retrophies_parser_init(retrophies_parser_t* self, const char* source_name, 
   self->temp_ptr = 0;
   self->temp_size = temp_size;
   self->temp_buffer = (uint8_t*)temp_buffer;
+
+  self->globals.vars = NULL;
+  self->globals.previous = NULL;
 }
 
 int retrophies_parser_parse(retrophies_parser_t* self)

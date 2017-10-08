@@ -1,27 +1,29 @@
 #include "parser.h"
 
-static void retrophies_parser_parseglobal(retrophies_parser_t* self, uint32_t hash)
+static void retrophies_parser_parseglobal(retrophies_parser_t* self)
 {
   for (;;)
   {
-    retrophies_parser_global_t* previous = self->globals;
-    retrophies_parser_global_t* var;
+    retrophies_parser_var_t* previous = self->globals.vars;
+    retrophies_parser_var_t* var;
 
     for (;;)
     {
-      var = retrophies_parser_findglobal(self, self->la.hash);
+      int scope_index;
+      var = retrophies_parser_findvar(self, self->la.hash, &scope_index);
 
-      if (var != NULL)
+      if (var != NULL && scope_index == 0)
       {
         retrophies_parser_error(self, self->la.line, "Duplicated identifier: %.*s", self->la.lexeme.chars, self->la.lexeme.length);
         /* never returns */
       }
 
-      var = RETROPHIES_PARSER_ALLOC(retrophies_parser_global_t);
-      var->previous = self->globals;
-      self->globals = var;
+      var = retrophies_parser_allocvar(self);
+      var->previous = self->globals.vars;
+      self->globals.vars = var;
       var->name = self->la;
-      var->hash = self->la.hash ^ hash;
+      var->hash = self->la.hash;
+      var->flags = RETROPHIES_VAR_GLOBAL;
       retrophies_parser_match(self, RETROPHIES_TOKEN_IDENTIFIER);
 
       if (self->la.token != ',')
@@ -35,7 +37,7 @@ static void retrophies_parser_parseglobal(retrophies_parser_t* self, uint32_t ha
     retrophies_parser_match(self, RETROPHIES_TOKEN_AS);
     int type = retrophies_parser_parsetype(self);
 
-    var = self->globals;
+    var = self->globals.vars;
 
     while (var != previous)
     {
@@ -56,29 +58,31 @@ static void retrophies_parser_parselocal(retrophies_parser_t* self)
 {
   for (;;)
   {
-    retrophies_parser_local_t* previous = self->sub->locals;
-    retrophies_parser_local_t* var;
+    retrophies_parser_var_t* previous = self->sub->locals->vars;
+    retrophies_parser_var_t* var;
     int count = 0;
 
     for (;;)
     {
-      var = retrophies_parser_findlocal(self, self->la.hash);
+      int scope_index;
+      var = retrophies_parser_findvar(self, self->la.hash, &scope_index);
 
-      if (var != NULL)
+      if (var != NULL && scope_index == 0)
       {
         retrophies_parser_error(self, self->la.line, "Duplicated identifier: %.*s", self->la.lexeme.chars, self->la.lexeme.length);
         /* never returns */
       }
 
-      var = retrophies_parser_alloclocal(self);
-      var->previous = self->sub->locals;
-      self->sub->locals = var;
+      var = retrophies_parser_allocvar(self);
+      var->previous = self->sub->locals->vars;
+      self->sub->locals->vars = var;
       var->name = self->la;
-      var->index = var->previous != NULL ? var->previous->index + 1 : 0;
+      var->index = self->sub->num_locals++;
+      var->flags = 0;
 
-      if (var->index >= self->sub->num_locals)
+      if (self->sub->num_locals > self->sub->max_locals)
       {
-        self->sub->num_locals = var->index + 1;
+        self->sub->max_locals = self->sub->num_locals;
       }
 
       count++;
@@ -97,10 +101,11 @@ static void retrophies_parser_parselocal(retrophies_parser_t* self)
 
     if (count == 1 && retrophies_parser_matchopt(self, '='))
     {
+      retrophies_parser_parseexpression(self, type);
       retrophies_parser_emit(self, RETROPHIES_INSN_SETLOCAL, var->index);
     }
 
-    var = self->sub->locals;
+    var = self->sub->locals->vars;
 
     while (var != previous)
     {
@@ -117,12 +122,76 @@ static void retrophies_parser_parselocal(retrophies_parser_t* self)
   }
 }
 
+static void retrophies_parser_parsestatic(retrophies_parser_t* self)
+{
+  for (;;)
+  {
+    retrophies_parser_var_t* previous = self->sub->locals->vars;
+    retrophies_parser_var_t* var;
+    int count = 0;
+
+    for (;;)
+    {
+      int scope_index;
+      var = retrophies_parser_findvar(self, self->la.hash, &scope_index);
+
+      if (var != NULL && scope_index == 0)
+      {
+        retrophies_parser_error(self, self->la.line, "Duplicated identifier: %.*s", self->la.lexeme.chars, self->la.lexeme.length);
+        /* never returns */
+      }
+
+      var = retrophies_parser_allocvar(self);
+      var->previous = self->sub->locals->vars;
+      self->sub->locals->vars = var;
+      var->name = self->la;
+      var->hash = self->la.hash ^ self->sub->name.hash;
+      var->flags = RETROPHIES_VAR_STATIC;
+
+      count++;
+      retrophies_parser_match(self, RETROPHIES_TOKEN_IDENTIFIER);
+
+      if (self->la.token != ',')
+      {
+        break;
+      }
+
+      retrophies_parser_matchany(self);
+    }
+
+    retrophies_parser_match(self, RETROPHIES_TOKEN_AS);
+    int type = retrophies_parser_parsetype(self);
+
+    if (count == 1 && retrophies_parser_matchopt(self, '='))
+    {
+      retrophies_parser_parseexpression(self, type);
+      retrophies_parser_emit(self, RETROPHIES_INSN_SETLOCAL, var->index);
+    }
+
+    var = self->sub->locals->vars;
+
+    while (var != previous)
+    {
+      var->type = type;
+      var = var->previous;
+    }
+
+    if (self->la.token != ',')
+    {
+      break;
+    }
+
+    retrophies_parser_matchany(self);
+  }
+}
+
+
 static void retrophies_parser_parsedim(retrophies_parser_t* self, int is_global)
 {
   if (is_global)
   {
     retrophies_parser_match(self, RETROPHIES_TOKEN_DIM);
-    retrophies_parser_parseglobal(self, 0);
+    retrophies_parser_parseglobal(self);
   }
   else
   {
@@ -131,7 +200,7 @@ static void retrophies_parser_parsedim(retrophies_parser_t* self, int is_global)
     
     if (is_static)
     {
-      retrophies_parser_parseglobal(self, self->sub->name.hash);
+      retrophies_parser_parsestatic(self);
     }
     else
     {

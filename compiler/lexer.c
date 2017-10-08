@@ -122,121 +122,14 @@ int retrophies_lexer_next(retrophies_lexer_t* self, retrophies_lexer_lookahead_t
 
   if (RETROPHIES_LEXER_ISDIGIT(k))
   {
-    int isint = 1;
-
     do
     {
       k = retrophies_lexer_skip(self);
     }
     while (RETROPHIES_LEXER_ISDIGIT(k));
 
-    if (k == '.')
-    {
-      isint = 0;
-      k = retrophies_lexer_skip(self);
-
-      if (RETROPHIES_LEXER_ISDIGIT(k))
-      {
-        do
-        {
-          k = retrophies_lexer_skip(self);
-        }
-        while (RETROPHIES_LEXER_ISDIGIT(k));
-      }
-      else
-      {
-        char c[8];
-
-        retrophies_lexer_formatchar(c, sizeof(c), k);
-        return retrophies_lexer_error(self, "Invalid digit after decimal separator: %c", c);
-      }
-    }
-
-    if ((k & 0xdf) == 'E') /* ascii only */
-    {
-      isint = 0;
-      k = retrophies_lexer_skip(self);
-
-      if (k == '+' || k == '-')
-      {
-        k = retrophies_lexer_skip(self);
-      }
-
-      if (RETROPHIES_LEXER_ISDIGIT(k))
-      {
-        do
-        {
-          k = retrophies_lexer_skip(self);
-        }
-        while (RETROPHIES_LEXER_ISDIGIT(k));
-      }
-      else
-      {
-        char c[8];
-
-        retrophies_lexer_formatchar(c, sizeof(c), k);
-        return retrophies_lexer_error(self, "Invalid digit after decimal separator: %c", c);
-      }
-    }
-
-    const uint8_t* suffix_start = self->source - 1;
-    uint32_t suffix = 0;
-    int suffix_length;
-    
-    if (RETROPHIES_LEXER_ISALPHA(k))
-    {
-      do
-      {
-        suffix = suffix << 8 | tolower(k);
-        k = retrophies_lexer_skip(self);
-      }
-      while (RETROPHIES_LEXER_ISALPHA(k));
-
-      if (isint)
-      {
-        switch (suffix)
-        {
-        case 0:
-          suffix_length = 0;
-          break;
-        
-        case 's': /* short */
-        case 'i': /* integer */
-        case 'l': /* long */
-          suffix_length = 1;
-          break;
-
-        case 'u' << 8 | 's': /* unsigned short */
-        case 'u' << 8 | 'i': /* unsigned integer */
-        case 'u' << 8 | 'l': /* unsigned long */
-          suffix_length = 2;
-          break;
-
-        default:
-          return retrophies_lexer_error(self, "Invalid integer suffix: %.*s", suffix_start, self->source - suffix_start);
-        }
-      }
-      else
-      {
-        switch (suffix)
-        {
-        case 0:
-          suffix_length = 0;
-          break;
-
-        case 'f': /* single */
-        case 'r': /* double */
-          suffix_length = 1;
-          break;
-        
-        default:
-          return retrophies_lexer_error(self, "Invalid float suffix: %.*s", suffix_start, self->source - suffix_start);
-        }
-      }
-    }
-
-    la->token         = isint ? RETROPHIES_TOKEN_INTEGER_LITERAL : RETROPHIES_TOKEN_FLOAT_LITERAL;
-    la->lexeme.length = self->source - start - suffix_length;
+    la->token         = RETROPHIES_TOKEN_INTEGER_LITERAL;
+    la->lexeme.length = self->source - start;
     self->last_char   = k;
     return 0;
   }

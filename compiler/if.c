@@ -15,7 +15,7 @@ static void retrophies_parser_parseif(retrophies_parser_t* self)
   retrophies_parser_matchopt(self, RETROPHIES_TOKEN_THEN);
 
   void* label_false = (void*)(self->code->code + self->code->count);
-  retrophies_parser_emit(self, RETROPHIES_INSN_JNE, 0);
+  retrophies_parser_emit(self, RETROPHIES_INSN_JFALSE, 0);
 
   retrophies_parser_parsestatements(self);
 
@@ -33,7 +33,7 @@ static void retrophies_parser_parseif(retrophies_parser_t* self)
     retrophies_parser_matchopt(self, RETROPHIES_TOKEN_THEN);
 
     label_false = (void*)(self->code->code + self->code->count);
-    retrophies_parser_emit(self, RETROPHIES_INSN_JNE, 0);
+    retrophies_parser_emit(self, RETROPHIES_INSN_JFALSE, 0);
 
     retrophies_parser_parsestatements(self);
 

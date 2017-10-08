@@ -7,26 +7,37 @@
 #include <setjmp.h>
 
 #define RETROPHIES_PARSER_OFFSETOF(s, f) ((size_t)(&((s*)0)->f))
-#define RETROPHIES_PARSER_ALIGNOF(t)     RETROPHIES_PARSER_OFFSETOF(struct { char c; t d; }, d)
+#define RETROPHIES_PARSER_ALIGNOF(t)     RETROPHIES_PARSER_OFFSETOF(struct {char c; t d;}, d)
 
-typedef struct retrophies_parser_local_t retrophies_parser_local_t;
-
-struct retrophies_parser_local_t
+enum
 {
-  retrophies_lexer_lookahead_t name;
-  int                          index;
-  int                          type;
-  retrophies_parser_local_t*   previous;
+  RETROPHIES_VAR_STATIC = 1 << 0,
+  RETROPHIES_VAR_GLOBAL = 1 << 1
 };
 
-typedef struct retrophies_parser_global_t retrophies_parser_global_t;
+typedef struct retrophies_parser_var_t retrophies_parser_var_t;
 
-struct retrophies_parser_global_t
+struct retrophies_parser_var_t
 {
   retrophies_lexer_lookahead_t name;
-  uint32_t                     hash;
-  int                          type;
-  retrophies_parser_global_t*  previous;
+  retrophies_parser_var_t*     previous;
+
+  union
+  {
+    int                        index;
+    uint32_t                   hash;
+  };
+
+  int8_t                       type;
+  uint8_t                      flags;
+};
+
+typedef struct retrophies_parser_scope_t retrophies_parser_scope_t;
+
+struct retrophies_parser_scope_t
+{
+  retrophies_parser_var_t*   vars;
+  retrophies_parser_scope_t* previous;
 };
 
 typedef struct retrophies_parser_event_t retrophies_parser_event_t;
@@ -52,9 +63,10 @@ struct retrophies_parser_subroutine_t
 {
   int                             sub_type;
   retrophies_lexer_lookahead_t    name;
-  retrophies_parser_local_t*      locals;
+  retrophies_parser_scope_t*      locals;
   retrophies_parser_event_t*      events;
   int                             num_locals;
+  int                             max_locals;
   int                             ret_type;
   retrophies_parser_codeblock_t   code;
   int                             code_size;
@@ -68,15 +80,17 @@ struct retrophies_parser_t
   size_t                          temp_ptr;
   size_t                          temp_size;
   uint8_t*                        temp_buffer;
-  retrophies_parser_local_t*      free_locals;
+  retrophies_parser_scope_t*      free_scopes;
+  retrophies_parser_var_t*        free_vars;
 
   retrophies_lexer_t              lexer;
   retrophies_lexer_lookahead_t    la;
   retrophies_parser_subroutine_t* subroutines;
-  retrophies_parser_global_t*     globals;
+  retrophies_parser_scope_t       globals;
   retrophies_parser_subroutine_t* sub;
   retrophies_parser_codeblock_t*  code;
   int                             code_size;
+
   jmp_buf                         rollback;
 };
 

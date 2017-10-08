@@ -2,8 +2,9 @@
 
 static int retrophies_parser_parsestatements(retrophies_parser_t* self)
 {
-  retrophies_parser_local_t* previous = self->sub->locals;
   int returned = 0;
+
+  retrophies_parser_pushscope(self);
 
   for (;;)
   {
@@ -25,6 +26,6 @@ static int retrophies_parser_parsestatements(retrophies_parser_t* self)
   }
 
 out:
-  retrophies_parser_freelocals(self, previous);
+  retrophies_parser_popscope(self);
   return returned;
 }

@@ -17,7 +17,7 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
   sub = RETROPHIES_PARSER_ALLOC(retrophies_parser_subroutine_t);
   sub->previous = self->subroutines;
   self->subroutines = sub;
-  sub->locals = NULL;
+  sub->locals = &self->globals;
   sub->num_locals = 0;
   sub->events = NULL;
   sub->code.count = 0;
@@ -27,6 +27,7 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
   self->code_size = 0;
   self->sub = sub;
 
+  retrophies_parser_pushscope(self);
 
   if (retrophies_parser_matchopt(self, '('))
   {
@@ -34,20 +35,17 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
 
     for (;;)
     {
-      retrophies_parser_local_t* local = RETROPHIES_PARSER_ALLOC(retrophies_parser_local_t);
-      local->previous = sub->locals;
-      sub->locals = local;
-      local->name = self->la;
-      local->index = local->previous != NULL ? local->previous->index + 1 : 0;
-
-      if (local->index >= self->sub->num_locals)
-      {
-        self->sub->num_locals = local->index + 1;
-      }
+      retrophies_parser_var_t* var = RETROPHIES_PARSER_ALLOC(retrophies_parser_var_t);
+      var->previous = sub->locals->vars;
+      sub->locals->vars = var;
+      var->name = self->la;
+      var->index = sub->num_locals++;
+      var->flags = 0;
+      sub->max_locals = sub->num_locals;
 
       retrophies_parser_match(self, RETROPHIES_TOKEN_IDENTIFIER);
       retrophies_parser_match(self, RETROPHIES_TOKEN_AS);
-      local->type = retrophies_parser_parsetype(self);
+      var->type = retrophies_parser_parsetype(self);
 
       if (self->la.token != ',')
       {
@@ -108,7 +106,10 @@ static void retrophies_parser_parsesubroutine(retrophies_parser_t* self, int typ
     retrophies_parser_emit(self, RETROPHIES_INSN_RETURN);
   }
 
+  retrophies_parser_popscope(self);
+
   retrophies_parser_matchany(self);
   retrophies_parser_match(self, type);
+
   sub->code_size = self->code_size;
 }

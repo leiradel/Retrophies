@@ -9,5 +9,5 @@ static void retrophies_parser_parserepeat(retrophies_parser_t* self)
   retrophies_parser_parsestatements(self);
   retrophies_parser_parseexpression(self, RETROPHIES_TOKEN_BOOLEAN);
   
-  retrophies_parser_emit(self, RETROPHIES_INSN_JNE, pc_loop);
+  retrophies_parser_emit(self, RETROPHIES_INSN_JFALSE, pc_loop);
 }
